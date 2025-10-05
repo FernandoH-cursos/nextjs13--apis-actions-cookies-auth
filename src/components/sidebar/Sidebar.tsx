@@ -1,16 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
 
 import { SidebarItem } from "./SidebarItem";
+import { LogoutButton } from "./LogoutButton";
 
-import { CiLogout } from "react-icons/ci";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 import {
   IoBasketOutline,
   IoCalendarOutline,
   IoCheckboxOutline,
   IoCodeWorkingOutline,
   IoListOutline,
+  IoPersonOutline,
 } from "react-icons/io5";
+
 
 const menuItems = [
   {
@@ -37,10 +42,23 @@ const menuItems = [
     title: "Productos",
     icon: <IoBasketOutline />,
     path: "/dashboard/products",
+  },
+  {
+    title: "Perfil",
+    icon: <IoPersonOutline />,
+    path: "/dashboard/profile",
   }
 ];
 
-export const Sidebar = () => {
+export const Sidebar = async() => {
+  const session = await getServerSession(authOptions);
+  const avatarUrl = session?.user?.image
+    ? session.user.image
+    : "https://tailusui.gallerycdn.vsassets.io/extensions/tailusui/tailus-snippets/0.8.0/1730439953863/Microsoft.VisualStudio.Services.Icons.Default";
+  
+  const userName = session?.user?.name ?? "No name";
+  const userRoles = session?.user?.roles?.join(", ") ?? "No roles";
+  
   return (
     <aside className="ml-[-100%] fixed z-10 top-0 pb-3 px-6 w-full flex flex-col justify-between h-screen bg-white transition duration-300 md:w-4/12 lg:ml-0 lg:w-[25%] xl:w-[20%] 2xl:w-[15%]">
       <div>
@@ -58,16 +76,16 @@ export const Sidebar = () => {
 
         <div className="mt-8 text-center">
           <Image
-            src="https://tailusui.gallerycdn.vsassets.io/extensions/tailusui/tailus-snippets/0.8.0/1730439953863/Microsoft.VisualStudio.Services.Icons.Default"
-            alt=""
+            src={avatarUrl}
+            alt={userName}
             className="w-10 h-10 m-auto rounded-full object-cover lg:w-28 lg:h-28"
             width={112}
             height={112}
           />
           <h5 className="hidden mt-4 text-xl font-semibold text-gray-600 lg:block">
-            Cynthia J. Watts
+            {userName}
           </h5>
-          <span className="hidden text-gray-400 lg:block">Admin</span>
+          <span className="hidden text-gray-400 lg:block capitalize">{userRoles}</span>
         </div>
 
         <ul className="space-y-2 tracking-wide mt-8">
@@ -83,10 +101,7 @@ export const Sidebar = () => {
       </div>
 
       <div className="px-6 -mx-6 pt-4 flex justify-between items-center">
-        <button className="px-4 py-3 flex items-center space-x-4 rounded-md text-gray-600 group">
-          <CiLogout />
-          <span className="group-hover:text-gray-700">Logout</span>
-        </button>
+        <LogoutButton />
       </div>
     </aside>
   );

@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 
 import prisma from "@/lib/prisma";
+import { getUserSessionServer } from "@/auth";
 
-export const sleep = async(seconds: number) =>
+export const sleep = async (seconds: number) =>
   new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 
 //* Server action para actualizar el estado de un todo
@@ -30,9 +31,10 @@ export const toggleTodo = async (id: string, complete: boolean) => {
 
 //* Server action para crear un nuevo todo
 export const addTodo = async (description: string) => {
+  const user = await getUserSessionServer();
   try {
     const newTodo = await prisma.todo.create({
-      data: { description },
+      data: { description, userId: user!.id },
     });
     // console.log({ newTodo });
 
